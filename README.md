@@ -20,3 +20,4 @@ In order to start, you must to write your program in a hexadecimal editor, and o
 ```bash
 ./6502emulator
 ```
+Though please keep in mind that not all of the instructions are implemented and your program might not work as you'd expect to
