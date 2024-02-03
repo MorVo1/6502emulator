@@ -16,12 +16,12 @@ enum address_mode {
 };
 
 struct instruction {
-    void (*implementation)(struct cpu*, uint16_t);
+    void (*implementation)(struct cpu *, uint16_t);
     enum address_mode address_mode;
 };
 
 extern struct instruction instructions[INSTRUCTION_COUNT];
 
-void clc(struct cpu*, uint16_t);
-void nop(struct cpu*, uint16_t);
-void lda(struct cpu*, uint16_t);
+void clc(struct cpu *, uint16_t);
+void nop(struct cpu *, uint16_t);
+void lda(struct cpu *, uint16_t);

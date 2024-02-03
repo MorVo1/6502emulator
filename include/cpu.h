@@ -23,4 +23,4 @@ struct cpu {
     uint8_t sr;
 };
 
-void run(struct cpu*, uint8_t*);
+void run(struct cpu *, uint8_t *);

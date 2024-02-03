@@ -7,13 +7,13 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xA9] = {lda, OPERAND_IMMEDIATE}
 };
 
-void clc(struct cpu* cpu, uint16_t) {
+void clc(struct cpu *cpu, uint16_t) {
     cpu->sr &= ~SR_C;
 }
 
-void nop(struct cpu*, uint16_t) { }
+void nop(struct cpu *, uint16_t) { }
 
-void lda(struct cpu* cpu, uint16_t operand) {
+void lda(struct cpu *cpu, uint16_t operand) {
     if (!operand)
         cpu->sr |= SR_Z;
     else
