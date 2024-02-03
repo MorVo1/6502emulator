@@ -16,7 +16,13 @@ void nop(struct cpu*, uint16_t) { }
 void lda(struct cpu* cpu, uint16_t operand) {
     if (!operand)
         cpu->sr |= SR_Z;
+    else
+        cpu->sr ^= SR_Z;
+        
     if (operand & SIGN_BIT)
         cpu->sr |= SR_N;
+    else
+        cpu->sr ^= SR_Z;
+
     cpu->ac = operand;
 }
