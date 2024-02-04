@@ -22,7 +22,7 @@ void lda(struct cpu *cpu, uint16_t operand) {
     if (operand & SIGN_BIT)
         cpu->sr |= SR_N;
     else
-        cpu->sr &= ~SR_Z;
+        cpu->sr &= ~SR_N;
 
     cpu->ac = operand;
 }
