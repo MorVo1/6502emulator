@@ -13,46 +13,46 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xEA] = {nop, OPERAND_IMPLIED},
 };
 
-void clc(struct cpu *cpu, uint16_t) {
+void clc(struct cpu *cpu, uint8_t *) {
     cpu->sr &= ~SR_C;
 }
 
-void cld(struct cpu *cpu, uint16_t) {
+void cld(struct cpu *cpu, uint8_t *) {
     cpu->sr &= ~SR_D;
 }
 
-void cli(struct cpu *cpu, uint16_t) {
+void cli(struct cpu *cpu, uint8_t *) {
     cpu->sr &= ~SR_I;
 }
 
-void clv(struct cpu *cpu, uint16_t) {
+void clv(struct cpu *cpu, uint8_t *) {
     cpu->sr &= ~SR_V;
 }
 
-void sec(struct cpu *cpu, uint16_t) {
+void sec(struct cpu *cpu, uint8_t *) {
     cpu->sr |= SR_C;
 }
 
-void sed(struct cpu *cpu, uint16_t) {
+void sed(struct cpu *cpu, uint8_t *) {
     cpu->sr |= SR_D;
 }
 
-void sei(struct cpu *cpu, uint16_t) {
+void sei(struct cpu *cpu, uint8_t *) {
     cpu->sr |= SR_I;
 }
 
-void nop(struct cpu *, uint16_t) { }
+void nop(struct cpu *, uint8_t *) { }
 
-void lda(struct cpu *cpu, uint16_t operand) {
-    if (!operand)
+void lda(struct cpu *cpu, uint8_t *operand) {
+    if (!*operand)
         cpu->sr |= SR_Z;
     else
         cpu->sr &= ~SR_Z;
         
-    if (operand & SIGN_BIT)
+    if (*operand & SIGN_BIT)
         cpu->sr |= SR_N;
     else
         cpu->sr &= ~SR_N;
 
-    cpu->ac = operand;
+    cpu->ac = *operand;
 }

@@ -24,7 +24,7 @@ void run(struct cpu *cpu, uint8_t *ram) {
             case OPERAND_ABSOLUTE_Y:
                 break;
             case OPERAND_IMMEDIATE:
-                instruction->implementation(cpu, ram[++cpu->pc]);
+                instruction->implementation(cpu, &ram[++cpu->pc]);
                 break;
             case OPERAND_IMPLIED:
                 instruction->implementation(cpu, 0);
