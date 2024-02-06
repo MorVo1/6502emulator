@@ -10,8 +10,8 @@ int main() {
 		.pc = 0
 	};
 
-	FILE *ramfile = fopen("../ram", "r");
-	fgets(ram, MEM_SIZE, ramfile);
+	FILE *ramfile = fopen("../ram", "rb");
+	fread(ram, MEM_SIZE, MEM_SIZE, ramfile);
 
 	run(&cpu, ram);
 }
