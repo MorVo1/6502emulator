@@ -10,6 +10,8 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xF8] = {sed, OPERAND_IMPLIED},
     [0x78] = {sei, OPERAND_IMPLIED},
     [0xA9] = {lda, OPERAND_IMMEDIATE},
+    [0xA5] = {lda, OPERAND_ZEROPAGE},
+    [0xAD] = {lda, OPERAND_ABSOLUTE},
     [0xEA] = {nop, OPERAND_IMPLIED},
 };
 

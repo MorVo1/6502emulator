@@ -19,15 +19,20 @@ void run(struct cpu *cpu, uint8_t *ram) {
 
         switch (instruction->address_mode) {
             case OPERAND_ACCUMULATOR:
-            case OPERAND_ABSOLUTE:
             case OPERAND_ABSOLUTE_X:
             case OPERAND_ABSOLUTE_Y:
+                break;
+            case OPERAND_ABSOLUTE:
+                instruction->implementation(cpu, &ram[ram[++cpu->pc] + ram[++cpu->pc] * 0x100]);
                 break;
             case OPERAND_IMMEDIATE:
                 instruction->implementation(cpu, &ram[++cpu->pc]);
                 break;
             case OPERAND_IMPLIED:
                 instruction->implementation(cpu, 0);
+                break;
+            case OPERAND_ZEROPAGE:
+                instruction->implementation(cpu, &ram[ram[++cpu->pc]]);
         }
         cpu->pc++;
     }
