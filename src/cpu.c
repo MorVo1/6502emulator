@@ -21,13 +21,21 @@ void run(struct cpu *cpu, uint8_t *ram) {
 
         switch (instruction->address_mode) {
             case OPERAND_ACCUMULATOR:
-            case OPERAND_ABSOLUTE_X:
-            case OPERAND_ABSOLUTE_Y:
                 break;
             case OPERAND_ABSOLUTE:
                 operand = ram[++cpu->pc];
                 operand += ram[++cpu->pc] * 0x100;
                 instruction->implementation(cpu, &ram[operand]);
+                break;
+            case OPERAND_ABSOLUTE_X:
+                operand = ram[++cpu->pc];
+                operand += ram[++cpu->pc] * 0x100;
+                instruction->implementation(cpu, &ram[operand + cpu->x]);
+                break;
+            case OPERAND_ABSOLUTE_Y:
+                operand = ram[++cpu->pc];
+                operand += ram[++cpu->pc] * 0x100;
+                instruction->implementation(cpu, &ram[operand + cpu->y]);
                 break;
             case OPERAND_IMMEDIATE:
                 instruction->implementation(cpu, &ram[++cpu->pc]);
@@ -37,6 +45,12 @@ void run(struct cpu *cpu, uint8_t *ram) {
                 break;
             case OPERAND_ZEROPAGE:
                 instruction->implementation(cpu, &ram[ram[++cpu->pc]]);
+                break;
+            case OPEARAND_ZEROPAGE_X:
+                instruction->implementation(cpu, &ram[ram[++cpu->pc] + cpu->x]);
+                break;
+            case OPERAND_ZEROPAGE_Y:
+                instruction->implementation(cpu, &ram[ram[++cpu->pc] + cpu->y]);
         }
         cpu->pc++;
     }

@@ -11,8 +11,11 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x78] = {sei, OPERAND_IMPLIED},
     [0xA9] = {lda, OPERAND_IMMEDIATE},
     [0xA5] = {lda, OPERAND_ZEROPAGE},
+    [0xB5] = {lda, OPEARAND_ZEROPAGE_X},
     [0xAD] = {lda, OPERAND_ABSOLUTE},
-    [0xEA] = {nop, OPERAND_IMPLIED},
+    [0xBD] = {lda, OPERAND_ABSOLUTE_X},
+    [0xB9] = {lda, OPERAND_ABSOLUTE_Y},
+    [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
 void clc(struct cpu *cpu, uint8_t *) {
