@@ -6,6 +6,7 @@
 
 void run(struct cpu *cpu, uint8_t *ram) {
     uint16_t operand;
+    uint16_t lookup;
 
     while (true) {
         if (cpu->pc > 0x1000)
@@ -61,6 +62,14 @@ void run(struct cpu *cpu, uint8_t *ram) {
                 break;
             case OPERAND_ZEROPAGE_Y:
                 instruction->implementation(cpu, &ram[ram[++cpu->pc] + cpu->y]);
+                break;
+            case OPERAND_PRE_ZEROPAGE_X:
+                lookup = ram[++cpu->pc] + cpu->x;
+                instruction->implementation(cpu, &ram[ram[lookup] + ram[lookup + 1] * 0x100]);
+                break;
+            case OPERAND_POST_ZEROPAGE_Y:
+                lookup = ram[++cpu->pc];
+                instruction->implementation(cpu, &ram[ram[lookup] + ram[lookup + 1] * 0x100 + cpu->y]);
         }
         cpu->pc++;
     }
