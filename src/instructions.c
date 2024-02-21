@@ -15,6 +15,8 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xAD] = {lda, OPERAND_ABSOLUTE},
     [0xBD] = {lda, OPERAND_ABSOLUTE_X},
     [0xB9] = {lda, OPERAND_ABSOLUTE_Y},
+    [0x4C] = {jmp, OPERAND_ABSOLUTE_JMP},
+    [0x6C] = {jmp, OPERAND_INDIRECT},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -46,8 +48,6 @@ void sei(struct cpu *cpu, uint8_t *) {
     cpu->sr |= SR_I;
 }
 
-void nop(struct cpu *, uint8_t *) { }
-
 void lda(struct cpu *cpu, uint8_t *operand) {
     if (!*operand)
         cpu->sr |= SR_Z;
@@ -61,3 +61,11 @@ void lda(struct cpu *cpu, uint8_t *operand) {
 
     cpu->ac = *operand;
 }
+
+void jmp(struct cpu *cpu, uint8_t *operand) {
+    uint16_t addr = *operand;
+    addr += *(operand + 1) * 0x100;
+    cpu->pc = addr;
+}
+
+void nop(struct cpu *, uint8_t *) { }

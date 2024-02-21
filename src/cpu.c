@@ -5,7 +5,7 @@
 #include "instructions.h"
 
 void run(struct cpu *cpu, uint8_t *ram) {
-    uint8_t operand;
+    uint16_t operand;
 
     while (true) {
         if (cpu->pc > 0x1000)
@@ -36,6 +36,16 @@ void run(struct cpu *cpu, uint8_t *ram) {
                 operand = ram[++cpu->pc];
                 operand += ram[++cpu->pc] * 0x100;
                 instruction->implementation(cpu, &ram[operand + cpu->y]);
+                break;
+            case OPERAND_ABSOLUTE_JMP:
+                instruction->implementation(cpu, &ram[++cpu->pc]);
+                continue;
+                break;
+            case OPERAND_INDIRECT:
+                operand = ram[++cpu->pc];
+                operand += ram[++cpu->pc] * 0x100;
+                instruction->implementation(cpu, &ram[operand]);
+                continue;
                 break;
             case OPERAND_IMMEDIATE:
                 instruction->implementation(cpu, &ram[++cpu->pc]);
