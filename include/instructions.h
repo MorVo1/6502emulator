@@ -38,5 +38,6 @@ void sed(struct cpu *, uint8_t *);
 void sei(struct cpu *, uint8_t *);
 void lda(struct cpu *, uint8_t *);
 void ldx(struct cpu *, uint8_t *);
+void ldy(struct cpu *, uint8_t *);
 void jmp(struct cpu *, uint8_t *);
 void nop(struct cpu *, uint8_t *);
