@@ -57,7 +57,7 @@ void run(struct cpu *cpu, uint8_t *ram) {
             case OPERAND_ZEROPAGE:
                 instruction->implementation(cpu, &ram[ram[++cpu->pc]]);
                 break;
-            case OPEARAND_ZEROPAGE_X:
+            case OPERAND_ZEROPAGE_X:
                 instruction->implementation(cpu, &ram[ram[++cpu->pc] + cpu->x]);
                 break;
             case OPERAND_ZEROPAGE_Y:
