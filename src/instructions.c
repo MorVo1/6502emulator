@@ -17,6 +17,11 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xB9] = {lda, OPERAND_ABSOLUTE_Y},
     [0xA1] = {lda, OPERAND_PRE_ZEROPAGE_X},
     [0xB1] = {lda, OPERAND_POST_ZEROPAGE_Y},
+    [0xA2] = {ldx, OPERAND_IMMEDIATE},
+    [0xA6] = {ldx, OPERAND_ZEROPAGE},
+    [0xB6] = {ldx, OPERAND_ZEROPAGE_Y},
+    [0xAE] = {ldx, OPERAND_ABSOLUTE},
+    [0xBE] = {ldx, OPERAND_ABSOLUTE_Y},
     [0x4C] = {jmp, OPERAND_ABSOLUTE_JMP},
     [0x6C] = {jmp, OPERAND_INDIRECT},
     [0xEA] = {nop, OPERAND_IMPLIED}
@@ -62,6 +67,20 @@ void lda(struct cpu *cpu, uint8_t *operand) {
         cpu->sr &= ~SR_N;
 
     cpu->ac = *operand;
+}
+
+void ldx(struct cpu *cpu, uint8_t *operand) {
+    if (!*operand)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+        
+    if (*operand & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    cpu->x = *operand;
 }
 
 void jmp(struct cpu *cpu, uint8_t *operand) {
