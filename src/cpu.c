@@ -74,3 +74,7 @@ void run(struct cpu *cpu, uint8_t *ram) {
         cpu->pc++;
     }
 }
+
+void reset(struct cpu *cpu, uint8_t *ram) {
+    cpu->pc = ram[0xFFFC] + ram[0xFFFD] * 0x100;
+}
