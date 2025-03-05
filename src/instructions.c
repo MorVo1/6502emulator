@@ -27,40 +27,40 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xB4] = {ldy, OPERAND_ZEROPAGE_X},
     [0xAC] = {ldy, OPERAND_ABSOLUTE},
     [0xBC] = {ldy, OPERAND_ABSOLUTE_X},
-    [0x4C] = {jmp, OPERAND_ABSOLUTE_JMP},
+    [0x4C] = {jmp, OPERAND_ABSOLUTE},
     [0x6C] = {jmp, OPERAND_INDIRECT},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
-void clc(struct cpu *cpu, uint8_t *) {
+void clc(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->sr &= ~SR_C;
 }
 
-void cld(struct cpu *cpu, uint8_t *) {
+void cld(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->sr &= ~SR_D;
 }
 
-void cli(struct cpu *cpu, uint8_t *) {
+void cli(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->sr &= ~SR_I;
 }
 
-void clv(struct cpu *cpu, uint8_t *) {
+void clv(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->sr &= ~SR_V;
 }
 
-void sec(struct cpu *cpu, uint8_t *) {
+void sec(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->sr |= SR_C;
 }
 
-void sed(struct cpu *cpu, uint8_t *) {
+void sed(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->sr |= SR_D;
 }
 
-void sei(struct cpu *cpu, uint8_t *) {
+void sei(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->sr |= SR_I;
 }
 
-void lda(struct cpu *cpu, uint8_t *operand) {
+void lda(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     if (!*operand)
         cpu->sr |= SR_Z;
     else
@@ -74,7 +74,7 @@ void lda(struct cpu *cpu, uint8_t *operand) {
     cpu->ac = *operand;
 }
 
-void ldx(struct cpu *cpu, uint8_t *operand) {
+void ldx(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     if (!*operand)
         cpu->sr |= SR_Z;
     else
@@ -88,7 +88,7 @@ void ldx(struct cpu *cpu, uint8_t *operand) {
     cpu->x = *operand;
 }
 
-void ldy(struct cpu *cpu, uint8_t *operand) {
+void ldy(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     if (!*operand)
         cpu->sr |= SR_Z;
     else
@@ -102,10 +102,9 @@ void ldy(struct cpu *cpu, uint8_t *operand) {
     cpu->y = *operand;
 }
 
-void jmp(struct cpu *cpu, uint8_t *operand) {
-    uint16_t addr = *operand;
-    addr += *(operand + 1) * 0x100;
-    cpu->pc = addr;
+void jmp(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
+    // I am subtracting 1 from it because it gets added later on in my main loop.
+    cpu->pc = operand - ram - 1;
 }
 
-void nop(struct cpu *, uint8_t *) { }
+void nop(struct cpu *, uint8_t *, uint8_t *) { }
