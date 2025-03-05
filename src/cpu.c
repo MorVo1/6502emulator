@@ -9,9 +9,6 @@ void run(struct cpu *cpu, uint8_t *ram) {
     uint16_t lookup;
 
     while (true) {
-        if (cpu->pc > 0x1000)
-            cpu->pc = 0;
-
         printf("PC = %04x\tAC = %02x\tX = %02x\tY = %02x\tSP = %02x\tSR = %08b\n", cpu->pc, cpu->ac, cpu->x, cpu->y, cpu->sp, cpu->sr);
 
         struct instruction *instruction = &instructions[ram[cpu->pc]];

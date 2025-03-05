@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 project(6502emulator C)
 
-set(SOURCE_FILES src/main.c src/cpu.c src/instructions.c)
+file(GLOB_RECURSE SOURCE_FILES src/*.c)
 
 add_compile_options(-fsanitize=undefined,address -Wall -Wextra -Werror -pedantic)
 add_link_options(-fsanitize=undefined,address)
