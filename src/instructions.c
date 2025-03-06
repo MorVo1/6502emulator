@@ -42,6 +42,12 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x84] = {sty, OPERAND_ZEROPAGE},
     [0x94] = {sty, OPERAND_ZEROPAGE},
     [0x8C] = {sty, OPERAND_ZEROPAGE},
+    [0xAA] = {tax, OPERAND_IMPLIED},
+    [0xA8] = {tay, OPERAND_IMPLIED},
+    [0xBA] = {tsx, OPERAND_IMPLIED},
+    [0x8A] = {txa, OPERAND_IMPLIED},
+    [0x9A] = {txs, OPERAND_IMPLIED},
+    [0x98] = {tya, OPERAND_IMPLIED},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -130,6 +136,80 @@ void stx(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
 
 void sty(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
     ram[operand - ram] = cpu->y;
+}
+
+void tax(struct cpu *cpu, uint8_t *, uint8_t *) {
+    if (!cpu->ac)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+    
+    if (cpu->ac & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+    
+    cpu->x = cpu->ac;
+}
+
+void tay(struct cpu *cpu, uint8_t *, uint8_t *) {
+    if (!cpu->ac)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+    
+    if (cpu->ac & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+    
+    cpu->y = cpu->ac;
+}
+
+void tsx(struct cpu *cpu, uint8_t *, uint8_t *) {
+    if (!cpu->sp)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+    
+    if (cpu->sp & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+    
+    cpu->x = cpu->sp;
+}
+
+void txa(struct cpu *cpu, uint8_t *, uint8_t *) {
+    if (!cpu->x)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+    
+    if (cpu->x & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+    
+    cpu->ac = cpu->x;
+}
+
+void txs(struct cpu *cpu, uint8_t *, uint8_t *) {
+    cpu->sp = cpu->x;
+}
+
+void tya(struct cpu *cpu, uint8_t *, uint8_t *) {
+    if (!cpu->y)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+    
+    if (cpu->y & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+    
+    cpu->ac = cpu->y;
 }
 
 void nop(struct cpu *, uint8_t *, uint8_t *) { }
