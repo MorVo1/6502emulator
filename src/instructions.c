@@ -117,5 +117,5 @@ void jmp(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
 void sta(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
     ram[operand - ram] = cpu->ac;
 }
-a
+
 void nop(struct cpu *, uint8_t *, uint8_t *) { }
