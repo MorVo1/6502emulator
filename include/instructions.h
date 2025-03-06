@@ -40,4 +40,6 @@ void ldx(struct cpu *, uint8_t *, uint8_t *);
 void ldy(struct cpu *, uint8_t *, uint8_t *);
 void jmp(struct cpu *, uint8_t *, uint8_t *);
 void sta(struct cpu *, uint8_t *, uint8_t *);
+void stx(struct cpu *, uint8_t *, uint8_t *);
+void sty(struct cpu *, uint8_t *, uint8_t *);
 void nop(struct cpu *, uint8_t *, uint8_t *);
