@@ -29,6 +29,13 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xBC] = {ldy, OPERAND_ABSOLUTE_X},
     [0x4C] = {jmp, OPERAND_ABSOLUTE},
     [0x6C] = {jmp, OPERAND_INDIRECT},
+    [0x85] = {sta, OPERAND_ZEROPAGE},
+    [0x95] = {sta, OPERAND_ZEROPAGE_X},
+    [0x8D] = {sta, OPERAND_ABSOLUTE},
+    [0x9D] = {sta, OPERAND_ABSOLUTE_X},
+    [0x99] = {sta, OPERAND_ABSOLUTE_Y},
+    [0x81] = {sta, OPERAND_PRE_ZEROPAGE_X},
+    [0x91] = {sta, OPERAND_POST_ZEROPAGE_Y},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -107,4 +114,8 @@ void jmp(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
     cpu->pc = operand - ram - 1;
 }
 
+void sta(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
+    ram[operand - ram] = cpu->ac;
+}
+a
 void nop(struct cpu *, uint8_t *, uint8_t *) { }
