@@ -48,6 +48,10 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x8A] = {txa, OPERAND_IMPLIED},
     [0x9A] = {txs, OPERAND_IMPLIED},
     [0x98] = {tya, OPERAND_IMPLIED},
+    [0x48] = {pha, OPERAND_IMPLIED},
+    [0x08] = {php, OPERAND_IMPLIED},
+    [0x68] = {pla, OPERAND_IMPLIED},
+    [0x28] = {plp, OPERAND_IMPLIED},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -210,6 +214,35 @@ void tya(struct cpu *cpu, uint8_t *, uint8_t *) {
         cpu->sr &= ~SR_N;
     
     cpu->ac = cpu->y;
+}
+
+void pha(struct cpu *cpu, uint8_t *, uint8_t *ram) {
+    ram[0x100 + cpu->sp] = cpu->ac;
+    cpu->sp--;
+}
+
+void php(struct cpu *cpu, uint8_t *, uint8_t *ram) {
+    ram[0x100 + cpu->sp] = cpu->sr;
+    cpu->sp--;
+}
+
+void pla(struct cpu *cpu, uint8_t *, uint8_t *ram) {
+    cpu->sp++;
+    cpu->ac = ram[0x100 + cpu->sp];
+    if (!cpu->ac)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+    
+    if (cpu->ac & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+}
+
+void plp(struct cpu *cpu, uint8_t *, uint8_t *ram) {
+    cpu->sp++;
+    cpu->sr = ram[0x100 + cpu->sp];
 }
 
 void nop(struct cpu *, uint8_t *, uint8_t *) { }

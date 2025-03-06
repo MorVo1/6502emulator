@@ -44,7 +44,7 @@ void run(struct cpu *cpu, uint8_t *ram) {
                 instruction->implementation(cpu, &ram[++cpu->pc], nullptr);
                 break;
             case OPERAND_IMPLIED:
-                instruction->implementation(cpu, 0, nullptr);
+                instruction->implementation(cpu, 0, ram);
                 break;
             case OPERAND_ZEROPAGE:
                 instruction->implementation(cpu, &ram[ram[++cpu->pc]], nullptr);
