@@ -18,8 +18,6 @@ void run(struct cpu *cpu, uint8_t *ram) {
         }
 
         switch (instruction->address_mode) {
-            case OPERAND_ACCUMULATOR:
-                break;
             case OPERAND_ABSOLUTE:
                 operand = ram[++cpu->pc];
                 operand += ram[++cpu->pc] * 0x100;
@@ -62,6 +60,9 @@ void run(struct cpu *cpu, uint8_t *ram) {
             case OPERAND_POST_ZEROPAGE_Y:
                 lookup = ram[++cpu->pc];
                 instruction->implementation(cpu, &ram[ram[lookup] + ram[lookup + 1] * 0x100 + cpu->y], nullptr);
+                break;
+            case OPERAND_ACCUMULATOR:
+                instruction->implementation(cpu, &cpu->ac, nullptr);
         }
         cpu->pc++;
     }
