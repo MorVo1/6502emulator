@@ -52,6 +52,11 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x08] = {php, OPERAND_IMPLIED},
     [0x68] = {pla, OPERAND_IMPLIED},
     [0x28] = {plp, OPERAND_IMPLIED},
+    [0x0A] = {asl, OPERAND_ACCUMULATOR},
+    [0x06] = {asl, OPERAND_ZEROPAGE},
+    [0x16] = {asl, OPERAND_ZEROPAGE_X},
+    [0x0E] = {asl, OPERAND_ABSOLUTE},
+    [0x1E] = {asl, OPERAND_ABSOLUTE_X},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -243,6 +248,40 @@ void pla(struct cpu *cpu, uint8_t *, uint8_t *ram) {
 void plp(struct cpu *cpu, uint8_t *, uint8_t *ram) {
     cpu->sp++;
     cpu->sr = ram[0x100 + cpu->sp];
+}
+
+void asl(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    if (*operand & SIGN_BIT)
+        cpu->sr |= SR_C;
+    else
+        cpu->sr &= ~SR_C;
+    
+    *operand = *operand << 1;
+
+    if (*operand & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!*operand)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void lsr(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    if (*operand & 0b000'0001)
+        cpu->sr |= SR_C;
+    else
+        cpu->sr &= ~SR_C;
+
+    cpu->sr &= ~SR_N;
+    *operand = *operand >> 1;
+    
+    if (!*operand)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
 }
 
 void nop(struct cpu *, uint8_t *, uint8_t *) { }
