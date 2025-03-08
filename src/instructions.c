@@ -57,6 +57,16 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x16] = {asl, OPERAND_ZEROPAGE_X},
     [0x0E] = {asl, OPERAND_ABSOLUTE},
     [0x1E] = {asl, OPERAND_ABSOLUTE_X},
+    [0x2A] = {rol, OPERAND_ACCUMULATOR},
+    [0x26] = {rol, OPERAND_ZEROPAGE},
+    [0x36] = {rol, OPERAND_ZEROPAGE_X},
+    [0x2E] = {rol, OPERAND_ABSOLUTE},
+    [0x3E] = {rol, OPERAND_ABSOLUTE_X},
+    [0x6A] = {ror, OPERAND_ACCUMULATOR},
+    [0x66] = {ror, OPERAND_ZEROPAGE},
+    [0x76] = {ror, OPERAND_ZEROPAGE_X},
+    [0x6E] = {ror, OPERAND_ABSOLUTE},
+    [0x7E] = {ror, OPERAND_ABSOLUTE_X},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -251,7 +261,7 @@ void plp(struct cpu *cpu, uint8_t *, uint8_t *ram) {
 }
 
 void asl(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    if (*operand & SIGN_BIT)
+    if (*operand & 0b1000'0000)
         cpu->sr |= SR_C;
     else
         cpu->sr &= ~SR_C;
@@ -278,6 +288,47 @@ void lsr(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     cpu->sr &= ~SR_N;
     *operand = *operand >> 1;
     
+    if (!*operand)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void rol(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    uint8_t carryin = cpu->sr & SR_C;
+    if (*operand & 0b1000'0000)
+        cpu->sr |= SR_C;
+    else
+        cpu->sr &= ~SR_C;
+
+    *operand = *operand << 1;
+    *operand += carryin;
+
+    if (*operand & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!*operand)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void ror(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    uint8_t carryin = cpu->sr & SR_C;
+    if (carryin)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+        
+    if (*operand & 0b0000'0001)
+        cpu->sr |= SR_C;
+    else
+        cpu->sr &= ~SR_C;
+
+    *operand = *operand >> 1;
+
     if (!*operand)
         cpu->sr |= SR_Z;
     else
