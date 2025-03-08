@@ -21,3 +21,15 @@ In order to start, you must to write your program in a hexadecimal editor, and o
 $ ./6502emulator
 ```
 Though please keep in mind that not all of the instructions are implemented and your program might not work as you'd expect to
+
+## TODO
+- [X] Implement the load instructions.
+- [X] Implement the trans instructions.
+- [X] Implement the stack instructions.
+- [X] Implement the shift instructions.
+- [ ] Implement the logic instructions.
+- [ ] Implement the arith instructions.
+- [ ] Implement the inc instructions.
+- [ ] Implement the ctrl instructions.
+- [ ] Implement the bra instructions.
+- [X] Implement the flags instructions.
