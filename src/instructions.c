@@ -67,6 +67,14 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x76] = {ror, OPERAND_ZEROPAGE_X},
     [0x6E] = {ror, OPERAND_ABSOLUTE},
     [0x7E] = {ror, OPERAND_ABSOLUTE_X},
+    [0x29] = {and, OPERAND_IMMEDIATE},
+    [0x25] = {and, OPERAND_ZEROPAGE},
+    [0x35] = {and, OPERAND_ZEROPAGE_X},
+    [0x2D] = {and, OPERAND_ABSOLUTE},
+    [0x3D] = {and, OPERAND_ABSOLUTE_X},
+    [0x39] = {and, OPERAND_ABSOLUTE_Y},
+    [0x21] = {and, OPERAND_PRE_ZEROPAGE_X},
+    [0x31] = {and, OPERAND_POST_ZEROPAGE_Y},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -330,6 +338,20 @@ void ror(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     *operand = *operand >> 1;
 
     if (!*operand)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void and(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    cpu->ac = cpu->ac & *operand;
+
+    if (cpu->ac & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!cpu->ac)
         cpu->sr |= SR_Z;
     else
         cpu->sr &= ~SR_Z;
