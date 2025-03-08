@@ -75,6 +75,24 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x39] = {and, OPERAND_ABSOLUTE_Y},
     [0x21] = {and, OPERAND_PRE_ZEROPAGE_X},
     [0x31] = {and, OPERAND_POST_ZEROPAGE_Y},
+    [0x2C] = {bit, OPERAND_ABSOLUTE},
+    [0x24] = {bit, OPERAND_ZEROPAGE},
+    [0x49] = {eor, OPERAND_IMMEDIATE},
+    [0x45] = {eor, OPERAND_ZEROPAGE},
+    [0x55] = {eor, OPERAND_ZEROPAGE_X},
+    [0x4D] = {eor, OPERAND_ABSOLUTE},
+    [0x5D] = {eor, OPERAND_ABSOLUTE_X},
+    [0x59] = {eor, OPERAND_ABSOLUTE_Y},
+    [0x41] = {eor, OPERAND_PRE_ZEROPAGE_X},
+    [0x51] = {eor, OPERAND_POST_ZEROPAGE_Y},
+    [0x09] = {ora, OPERAND_IMMEDIATE},
+    [0x05] = {ora, OPERAND_ZEROPAGE},
+    [0x15] = {ora, OPERAND_ZEROPAGE_X},
+    [0x0D] = {ora, OPERAND_ABSOLUTE},
+    [0x1D] = {ora, OPERAND_ABSOLUTE_X},
+    [0x19] = {ora, OPERAND_ABSOLUTE_Y},
+    [0x01] = {ora, OPERAND_PRE_ZEROPAGE_X},
+    [0x11] = {ora, OPERAND_POST_ZEROPAGE_Y},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -352,6 +370,53 @@ void and(struct cpu *cpu, uint8_t *operand, uint8_t *) {
         cpu->sr &= ~SR_N;
 
     if (!cpu->ac)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void eor(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    cpu->ac = cpu->ac ^ *operand;
+
+    if (cpu->ac & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!cpu->ac)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void ora(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    cpu->ac = cpu->ac | *operand;
+
+    if (cpu->ac & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!cpu->ac)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void bit(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    uint8_t result = cpu->ac & *operand;
+
+    if (*operand & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (*operand & SR_V)
+        cpu->sr |= SR_V;
+    else
+        cpu->sr &= ~SR_V;
+
+    if (!result)
         cpu->sr |= SR_Z;
     else
         cpu->sr &= ~SR_Z;
