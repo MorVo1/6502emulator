@@ -183,16 +183,16 @@ void jmp(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
     cpu->pc = operand - ram - 1;
 }
 
-void sta(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
-    ram[operand - ram] = cpu->ac;
+void sta(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    *operand = cpu->ac;
 }
 
-void stx(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
-    ram[operand - ram] = cpu->x;
+void stx(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    *operand = cpu->x;
 }
 
-void sty(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
-    ram[operand - ram] = cpu->y;
+void sty(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    *operand = cpu->y;
 }
 
 void tax(struct cpu *cpu, uint8_t *, uint8_t *) {
