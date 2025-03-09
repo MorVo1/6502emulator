@@ -99,6 +99,12 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xDE] = {dec, OPERAND_ABSOLUTE_X},
     [0xCA] = {dex, OPERAND_IMPLIED},
     [0x88] = {dey, OPERAND_IMPLIED},
+    [0xE6] = {inc, OPERAND_ZEROPAGE},
+    [0xF6] = {inc, OPERAND_ZEROPAGE_X},
+    [0xEE] = {inc, OPERAND_ABSOLUTE},
+    [0xFE] = {inc, OPERAND_ABSOLUTE_X},
+    [0xE8] = {inx, OPERAND_IMPLIED},
+    [0xC8] = {iny, OPERAND_IMPLIED},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -458,6 +464,48 @@ void dex(struct cpu *cpu, uint8_t *, uint8_t *) {
 
 void dey(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->y -= 1;
+
+    if (cpu->y & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!cpu->y)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void inc(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    *operand += 1;
+
+    if (*operand & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!*operand)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void inx(struct cpu *cpu, uint8_t *, uint8_t *) {
+    cpu->x += 1;
+
+    if (cpu->x & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!cpu->x)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void iny(struct cpu *cpu, uint8_t *, uint8_t *) {
+    cpu->y += 1;
 
     if (cpu->y & SIGN_BIT)
         cpu->sr |= SR_N;
