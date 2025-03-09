@@ -60,4 +60,7 @@ void and(struct cpu *, uint8_t *, uint8_t *);
 void bit(struct cpu *, uint8_t *, uint8_t *);
 void eor(struct cpu *, uint8_t *, uint8_t *);
 void ora(struct cpu *, uint8_t *, uint8_t *);
+void dec(struct cpu *, uint8_t *, uint8_t *);
+void dex(struct cpu *, uint8_t *, uint8_t *);
+void dey(struct cpu *, uint8_t *, uint8_t *);
 void nop(struct cpu *, uint8_t *, uint8_t *);

@@ -93,6 +93,12 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x19] = {ora, OPERAND_ABSOLUTE_Y},
     [0x01] = {ora, OPERAND_PRE_ZEROPAGE_X},
     [0x11] = {ora, OPERAND_POST_ZEROPAGE_Y},
+    [0xC6] = {dec, OPERAND_ZEROPAGE},
+    [0xD6] = {dec, OPERAND_ZEROPAGE_X},
+    [0xCE] = {dec, OPERAND_ABSOLUTE},
+    [0xDE] = {dec, OPERAND_ABSOLUTE_X},
+    [0xCA] = {dex, OPERAND_IMPLIED},
+    [0x88] = {dey, OPERAND_IMPLIED},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -362,7 +368,7 @@ void ror(struct cpu *cpu, uint8_t *operand, uint8_t *) {
 }
 
 void and(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    cpu->ac = cpu->ac & *operand;
+    cpu->ac &= *operand;
 
     if (cpu->ac & SIGN_BIT)
         cpu->sr |= SR_N;
@@ -376,7 +382,7 @@ void and(struct cpu *cpu, uint8_t *operand, uint8_t *) {
 }
 
 void eor(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    cpu->ac = cpu->ac ^ *operand;
+    cpu->ac ^= *operand;
 
     if (cpu->ac & SIGN_BIT)
         cpu->sr |= SR_N;
@@ -390,7 +396,7 @@ void eor(struct cpu *cpu, uint8_t *operand, uint8_t *) {
 }
 
 void ora(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    cpu->ac = cpu->ac | *operand;
+    cpu->ac |= *operand;
 
     if (cpu->ac & SIGN_BIT)
         cpu->sr |= SR_N;
@@ -417,6 +423,48 @@ void bit(struct cpu *cpu, uint8_t *operand, uint8_t *) {
         cpu->sr &= ~SR_V;
 
     if (!result)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void dec(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    *operand -= 1;
+
+    if (*operand & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!*operand)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void dex(struct cpu *cpu, uint8_t *, uint8_t *) {
+    cpu->x -= 1;
+
+    if (cpu->x & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!cpu->x)
+        cpu->sr |= SR_Z;
+    else
+        cpu->sr &= ~SR_Z;
+}
+
+void dey(struct cpu *cpu, uint8_t *, uint8_t *) {
+    cpu->y -= 1;
+
+    if (cpu->y & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+
+    if (!cpu->y)
         cpu->sr |= SR_Z;
     else
         cpu->sr &= ~SR_Z;
