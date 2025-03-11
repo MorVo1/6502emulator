@@ -29,6 +29,8 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xBC] = {ldy, OPERAND_ABSOLUTE_X},
     [0x4C] = {jmp, OPERAND_ABSOLUTE},
     [0x6C] = {jmp, OPERAND_INDIRECT},
+    [0x20] = {jsr, OPERAND_ABSOLUTE},
+    [0x60] = {rts, OPERAND_IMPLIED},
     [0x85] = {sta, OPERAND_ZEROPAGE},
     [0x95] = {sta, OPERAND_ZEROPAGE_X},
     [0x8D] = {sta, OPERAND_ABSOLUTE},
@@ -137,50 +139,41 @@ void sei(struct cpu *cpu, uint8_t *, uint8_t *) {
 }
 
 void lda(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-        
-    if (*operand & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
     cpu->ac = *operand;
+    set_n_if_negative(cpu, cpu->ac);
+    set_z_if_zero(cpu, cpu->ac);
 }
 
 void ldx(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-        
-    if (*operand & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
     cpu->x = *operand;
+    set_n_if_negative(cpu, cpu->x);
+    set_z_if_zero(cpu, cpu->x);
 }
 
 void ldy(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-        
-    if (*operand & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
     cpu->y = *operand;
+    set_n_if_negative(cpu, cpu->y);
+    set_z_if_zero(cpu, cpu->y);
 }
 
 void jmp(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
     // I am subtracting 1 from it because it gets added later on in my main loop.
     cpu->pc = operand - ram - 1;
+}
+
+void jsr(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
+    push(cpu, cpu->pc >> 8, ram);
+    push(cpu, cpu->pc & 0xFF, ram);
+
+    // I am subtracting 1 from it because it gets added later on in my main loop.
+    cpu->pc = operand - ram - 1;
+}
+
+void rts(struct cpu *cpu, uint8_t *, uint8_t *ram) {
+    uint8_t high, low;
+    pull(cpu, &low, ram);
+    pull(cpu, &high, ram);
+    cpu->pc = high * 0x100 + low;
 }
 
 void sta(struct cpu *cpu, uint8_t *operand, uint8_t *) {
@@ -196,59 +189,27 @@ void sty(struct cpu *cpu, uint8_t *operand, uint8_t *) {
 }
 
 void tax(struct cpu *cpu, uint8_t *, uint8_t *) {
-    if (!cpu->ac)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-    
-    if (cpu->ac & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-    
     cpu->x = cpu->ac;
+    set_n_if_negative(cpu, cpu->x);
+    set_z_if_zero(cpu, cpu->x);
 }
 
 void tay(struct cpu *cpu, uint8_t *, uint8_t *) {
-    if (!cpu->ac)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-    
-    if (cpu->ac & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-    
     cpu->y = cpu->ac;
+    set_n_if_negative(cpu, cpu->y);
+    set_z_if_zero(cpu, cpu->y);
 }
 
 void tsx(struct cpu *cpu, uint8_t *, uint8_t *) {
-    if (!cpu->sp)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-    
-    if (cpu->sp & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-    
     cpu->x = cpu->sp;
+    set_n_if_negative(cpu, cpu->x);
+    set_z_if_zero(cpu, cpu->x);
 }
 
 void txa(struct cpu *cpu, uint8_t *, uint8_t *) {
-    if (!cpu->x)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-    
-    if (cpu->x & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-    
     cpu->ac = cpu->x;
+    set_n_if_negative(cpu, cpu->ac);
+    set_z_if_zero(cpu, cpu->ac);
 }
 
 void txs(struct cpu *cpu, uint8_t *, uint8_t *) {
@@ -256,46 +217,27 @@ void txs(struct cpu *cpu, uint8_t *, uint8_t *) {
 }
 
 void tya(struct cpu *cpu, uint8_t *, uint8_t *) {
-    if (!cpu->y)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-    
-    if (cpu->y & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-    
     cpu->ac = cpu->y;
+    set_n_if_negative(cpu, cpu->ac);
+    set_z_if_zero(cpu, cpu->ac);
 }
 
 void pha(struct cpu *cpu, uint8_t *, uint8_t *ram) {
-    ram[0x100 + cpu->sp] = cpu->ac;
-    cpu->sp--;
+    push(cpu, cpu->ac, ram);
 }
 
 void php(struct cpu *cpu, uint8_t *, uint8_t *ram) {
-    ram[0x100 + cpu->sp] = cpu->sr;
-    cpu->sp--;
+    push(cpu, cpu->sr, ram);
 }
 
 void pla(struct cpu *cpu, uint8_t *, uint8_t *ram) {
-    cpu->sp++;
-    cpu->ac = ram[0x100 + cpu->sp];
-    if (!cpu->ac)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
-    
-    if (cpu->ac & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
+    pull(cpu, &cpu->ac, ram);
+    set_n_if_negative(cpu, cpu->ac);
+    set_z_if_zero(cpu, cpu->ac);
 }
 
 void plp(struct cpu *cpu, uint8_t *, uint8_t *ram) {
-    cpu->sp++;
-    cpu->sr = ram[0x100 + cpu->sp];
+    pull(cpu, &cpu->sr, ram);
 }
 
 void asl(struct cpu *cpu, uint8_t *operand, uint8_t *) {
@@ -306,15 +248,8 @@ void asl(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     
     *operand = *operand << 1;
 
-    if (*operand & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    set_n_if_negative(cpu, *operand);
+    set_z_if_zero(cpu, *operand);
 }
 
 void lsr(struct cpu *cpu, uint8_t *operand, uint8_t *) {
@@ -326,10 +261,7 @@ void lsr(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     cpu->sr &= ~SR_N;
     *operand = *operand >> 1;
     
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    set_z_if_zero(cpu, *operand);
 }
 
 void rol(struct cpu *cpu, uint8_t *operand, uint8_t *) {
@@ -340,182 +272,115 @@ void rol(struct cpu *cpu, uint8_t *operand, uint8_t *) {
         cpu->sr &= ~SR_C;
 
     *operand = *operand << 1;
-    *operand += carryin;
+    *operand |= carryin;
 
-    if (*operand & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    set_n_if_negative(cpu, *operand);
+    set_z_if_zero(cpu, *operand);
 }
 
 void ror(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     uint8_t carryin = cpu->sr & SR_C;
-    if (carryin)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-        
     if (*operand & 0b0000'0001)
         cpu->sr |= SR_C;
     else
         cpu->sr &= ~SR_C;
-
+    
     *operand = *operand >> 1;
+    *operand |= carryin;
 
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    set_n_if_negative(cpu, *operand);
+    set_z_if_zero(cpu, *operand);
 }
 
 void and(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     cpu->ac &= *operand;
-
-    if (cpu->ac & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!cpu->ac)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    set_n_if_negative(cpu, cpu->ac);
+    set_z_if_zero(cpu, cpu->ac);
 }
 
 void eor(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     cpu->ac ^= *operand;
-
-    if (cpu->ac & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!cpu->ac)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    set_n_if_negative(cpu, cpu->ac);
+    set_z_if_zero(cpu, cpu->ac);
 }
 
 void ora(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     cpu->ac |= *operand;
-
-    if (cpu->ac & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!cpu->ac)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    set_n_if_negative(cpu, cpu->ac);
+    set_z_if_zero(cpu, cpu->ac);
 }
 
 void bit(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     uint8_t result = cpu->ac & *operand;
-
-    if (*operand & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
+    set_n_if_negative(cpu, *operand);
+    set_z_if_zero(cpu, result);
 
     if (*operand & SR_V)
         cpu->sr |= SR_V;
     else
         cpu->sr &= ~SR_V;
 
-    if (!result)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
 }
 
 void dec(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    *operand -= 1;
-
-    if (*operand & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    (*operand)--;
+    set_n_if_negative(cpu, *operand);
+    set_z_if_zero(cpu, *operand);
 }
 
 void dex(struct cpu *cpu, uint8_t *, uint8_t *) {
-    cpu->x -= 1;
-
-    if (cpu->x & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!cpu->x)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    cpu->x--;
+    set_n_if_negative(cpu, cpu->x);
+    set_z_if_zero(cpu, cpu->x);
 }
 
 void dey(struct cpu *cpu, uint8_t *, uint8_t *) {
-    cpu->y -= 1;
-
-    if (cpu->y & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!cpu->y)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    cpu->y--;
+    set_n_if_negative(cpu, cpu->y);
 }
 
 void inc(struct cpu *cpu, uint8_t *operand, uint8_t *) {
-    *operand += 1;
-
-    if (*operand & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!*operand)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    (*operand)++;
+    set_n_if_negative(cpu, *operand);
+    set_z_if_zero(cpu, *operand);
 }
 
 void inx(struct cpu *cpu, uint8_t *, uint8_t *) {
-    cpu->x += 1;
-
-    if (cpu->x & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
-
-    if (!cpu->x)
-        cpu->sr |= SR_Z;
-    else
-        cpu->sr &= ~SR_Z;
+    cpu->x++;
+    set_n_if_negative(cpu, cpu->x);
+    set_z_if_zero(cpu, cpu->y);
 }
 
 void iny(struct cpu *cpu, uint8_t *, uint8_t *) {
-    cpu->y += 1;
+    cpu->y++;
+    set_n_if_negative(cpu, cpu->y);
+    set_z_if_zero(cpu, cpu->y);
+}
 
-    if (cpu->y & SIGN_BIT)
-        cpu->sr |= SR_N;
-    else
-        cpu->sr &= ~SR_N;
+void nop(struct cpu *, uint8_t *, uint8_t *) { }
 
-    if (!cpu->y)
+// The functions below do not represent the 6502's instructions
+
+void set_z_if_zero(struct cpu *cpu, uint8_t value) {
+    if (!value)
         cpu->sr |= SR_Z;
     else
         cpu->sr &= ~SR_Z;
 }
 
-void nop(struct cpu *, uint8_t *, uint8_t *) { }
+void set_n_if_negative(struct cpu *cpu, uint8_t value) {
+    if (value & SIGN_BIT)
+        cpu->sr |= SR_N;
+    else
+        cpu->sr &= ~SR_N;
+}
+
+void push(struct cpu *cpu, uint8_t value, uint8_t *ram) {
+    ram[0x100 + cpu->sp] = value;
+    cpu->sp--;
+}
+
+void pull(struct cpu *cpu, uint8_t *dest, uint8_t *ram) {
+    cpu->sp++;
+    *dest = ram[0x100 + cpu->sp];
+}

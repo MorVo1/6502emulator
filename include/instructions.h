@@ -39,6 +39,8 @@ void lda(struct cpu *, uint8_t *, uint8_t *);
 void ldx(struct cpu *, uint8_t *, uint8_t *);
 void ldy(struct cpu *, uint8_t *, uint8_t *);
 void jmp(struct cpu *, uint8_t *, uint8_t *);
+void jsr(struct cpu *, uint8_t *, uint8_t *);
+void rts(struct cpu *, uint8_t *, uint8_t *);
 void sta(struct cpu *, uint8_t *, uint8_t *);
 void stx(struct cpu *, uint8_t *, uint8_t *);
 void sty(struct cpu *, uint8_t *, uint8_t *);
@@ -67,3 +69,10 @@ void inc(struct cpu *, uint8_t *, uint8_t *);
 void inx(struct cpu *, uint8_t *, uint8_t *);
 void iny(struct cpu *, uint8_t *, uint8_t *);
 void nop(struct cpu *, uint8_t *, uint8_t *);
+
+// The functions below do not represent the 6502's instructions
+
+void set_z_if_zero(struct cpu *, uint8_t);
+void set_n_if_negative(struct cpu *, uint8_t);
+void push(struct cpu *, uint8_t, uint8_t *);
+void pull(struct cpu *, uint8_t *, uint8_t *);
