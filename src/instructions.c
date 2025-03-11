@@ -27,9 +27,11 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xB4] = {ldy, OPERAND_ZEROPAGE_X},
     [0xAC] = {ldy, OPERAND_ABSOLUTE},
     [0xBC] = {ldy, OPERAND_ABSOLUTE_X},
+    [0x00] = {brk, OPERAND_IMPLIED},
     [0x4C] = {jmp, OPERAND_ABSOLUTE},
     [0x6C] = {jmp, OPERAND_INDIRECT},
     [0x20] = {jsr, OPERAND_ABSOLUTE},
+    [0x40] = {rti, OPERAND_IMPLIED},
     [0x60] = {rts, OPERAND_IMPLIED},
     [0x85] = {sta, OPERAND_ZEROPAGE},
     [0x95] = {sta, OPERAND_ZEROPAGE_X},
@@ -156,6 +158,19 @@ void ldy(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     set_z_if_zero(cpu, cpu->y);
 }
 
+void brk(struct cpu *cpu, uint8_t *, uint8_t *ram) {
+    push(cpu, cpu->pc >> 8, ram);
+    push(cpu, (cpu->pc & 0xFF) + 1, ram);
+
+    cpu->sr |= SR_B;
+    cpu->sr |= SR_I;
+    
+    push(cpu, cpu->sp, ram);
+
+    // I am subtracting 1 from it because it gets added later on in my main loop.
+    cpu->pc = ram[0xFFFE] + ram[0xFFFF] * 0x100 - 1;
+}
+
 void jmp(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
     // I am subtracting 1 from it because it gets added later on in my main loop.
     cpu->pc = operand - ram - 1;
@@ -167,6 +182,15 @@ void jsr(struct cpu *cpu, uint8_t *operand, uint8_t *ram) {
 
     // I am subtracting 1 from it because it gets added later on in my main loop.
     cpu->pc = operand - ram - 1;
+}
+
+void rti(struct cpu *cpu, uint8_t *, uint8_t *ram) {
+    pull(cpu, &cpu->sr, ram);
+    
+    uint8_t high, low;
+    pull(cpu, &low, ram);
+    pull(cpu, &high, ram);
+    cpu->pc = high * 0x100 + low;
 }
 
 void rts(struct cpu *cpu, uint8_t *, uint8_t *ram) {
