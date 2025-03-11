@@ -31,5 +31,5 @@ Though please keep in mind that not all of the instructions are implemented and 
 - [ ] Implement the arith instructions.
 - [X] Implement the inc instructions.
 - [X] Implement the ctrl instructions.
-- [ ] Implement the bra instructions.
+- [X] Implement the bra instructions.
 - [X] Implement the flags instructions.
