@@ -18,7 +18,8 @@ enum address_mode {
 	OPERAND_ZEROPAGE_Y,
 	OPERAND_PRE_ZEROPAGE_X,
 	OPERAND_POST_ZEROPAGE_Y,
-	OPERAND_INDIRECT
+	OPERAND_INDIRECT,
+	OPERAND_RELATIVE
 };
 
 struct instruction {
@@ -70,6 +71,8 @@ void dey(struct cpu *, uint8_t *, uint8_t *);
 void inc(struct cpu *, uint8_t *, uint8_t *);
 void inx(struct cpu *, uint8_t *, uint8_t *);
 void iny(struct cpu *, uint8_t *, uint8_t *);
+void bcc(struct cpu *, uint8_t *, uint8_t *);
+void bcs(struct cpu *, uint8_t *, uint8_t *);
 void nop(struct cpu *, uint8_t *, uint8_t *);
 
 // The functions below do not represent the 6502's instructions

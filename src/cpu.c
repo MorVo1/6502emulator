@@ -63,6 +63,9 @@ void run(struct cpu *cpu, uint8_t *ram) {
                 break;
             case OPERAND_ACCUMULATOR:
                 instruction->implementation(cpu, &cpu->ac, nullptr);
+                break;
+            case OPERAND_RELATIVE:
+                instruction->implementation(cpu, &ram[++cpu->pc], nullptr);
         }
         cpu->pc++;
     }

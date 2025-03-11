@@ -109,6 +109,8 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xFE] = {inc, OPERAND_ABSOLUTE_X},
     [0xE8] = {inx, OPERAND_IMPLIED},
     [0xC8] = {iny, OPERAND_IMPLIED},
+    [0x90] = {bcc, OPERAND_RELATIVE},
+    [0xB0] = {bcs, OPERAND_RELATIVE},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -379,6 +381,16 @@ void iny(struct cpu *cpu, uint8_t *, uint8_t *) {
     cpu->y++;
     set_n_if_negative(cpu, cpu->y);
     set_z_if_zero(cpu, cpu->y);
+}
+
+void bcc(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    if (!(cpu->sr & SR_C))
+        cpu->pc += *operand;
+}
+
+void bcs(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    if (cpu->sr & SR_C)
+        cpu->pc += *operand;
 }
 
 void nop(struct cpu *, uint8_t *, uint8_t *) { }
