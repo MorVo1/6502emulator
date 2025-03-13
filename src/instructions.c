@@ -111,6 +111,12 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xC8] = {iny, OPERAND_IMPLIED},
     [0x90] = {bcc, OPERAND_RELATIVE},
     [0xB0] = {bcs, OPERAND_RELATIVE},
+    [0xF0] = {beq, OPERAND_RELATIVE},
+    [0x30] = {bmi, OPERAND_RELATIVE},
+    [0xD0] = {bne, OPERAND_RELATIVE},
+    [0x10] = {bpl, OPERAND_RELATIVE},
+    [0x50] = {bvc, OPERAND_RELATIVE},
+    [0x70] = {bvs, OPERAND_RELATIVE},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
