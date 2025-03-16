@@ -125,6 +125,14 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x79] = {adc, OPERAND_ABSOLUTE_Y},
     [0x61] = {adc, OPERAND_PRE_ZEROPAGE_X},
     [0x71] = {adc, OPERAND_POST_ZEROPAGE_Y},
+    [0xC9] = {cmp, OPERAND_IMMEDIATE},
+    [0xC5] = {cmp, OPERAND_ZEROPAGE},
+    [0xD5] = {cmp, OPERAND_ZEROPAGE_X},
+    [0xCD] = {cmp, OPERAND_ABSOLUTE},
+    [0xDD] = {cmp, OPERAND_ABSOLUTE_X},
+    [0xD9] = {cmp, OPERAND_ABSOLUTE_Y},
+    [0xC1] = {cmp, OPERAND_PRE_ZEROPAGE_X},
+    [0xD1] = {cmp, OPERAND_POST_ZEROPAGE_Y},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -476,6 +484,18 @@ void adc(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     set_n_if_negative(cpu, cpu->ac);
     set_z_if_zero(cpu, cpu->ac);
     set_v_on_overflow(cpu, acold, *operand);
+}
+
+void cmp(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    uint8_t result = cpu->ac - *operand;
+
+    if (result <= cpu->ac)
+        cpu->sr |= SR_C;
+    else
+        cpu->sr &= ~SR_C;
+    
+    set_n_if_negative(cpu, result);
+    set_z_if_zero(cpu, result);
 }
 
 void nop(struct cpu *, uint8_t *, uint8_t *) { }
