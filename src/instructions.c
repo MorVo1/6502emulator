@@ -117,6 +117,14 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0x10] = {bpl, OPERAND_RELATIVE},
     [0x50] = {bvc, OPERAND_RELATIVE},
     [0x70] = {bvs, OPERAND_RELATIVE},
+    [0x69] = {adc, OPERAND_IMMEDIATE},
+    [0x65] = {adc, OPERAND_ZEROPAGE},
+    [0x75] = {adc, OPERAND_ZEROPAGE_X},
+    [0x6D] = {adc, OPERAND_ABSOLUTE},
+    [0x7D] = {adc, OPERAND_ABSOLUTE_X},
+    [0x79] = {adc, OPERAND_ABSOLUTE_Y},
+    [0x61] = {adc, OPERAND_PRE_ZEROPAGE_X},
+    [0x71] = {adc, OPERAND_POST_ZEROPAGE_Y},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -429,6 +437,47 @@ void bvs(struct cpu *cpu, uint8_t *operand, uint8_t *) {
         cpu->pc += *operand;
 }
 
+void adc(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    uint8_t acold = cpu->ac;
+    uint8_t carryin = cpu->sr & SR_C;
+    uint8_t achigh, aclow, ophigh, oplow, dechigh, declow;
+
+    if (!(cpu->sr & SR_D)) {
+        if (cpu->ac + *operand > 255)
+            cpu->sr |= SR_C;
+        else
+            cpu->sr &= ~SR_C;
+            
+        cpu->ac += *operand + carryin;
+    }
+    else {
+        achigh = cpu->ac >> 4;
+        aclow = cpu->ac & 0xF;
+
+        ophigh = *operand >> 4;
+        oplow = *operand & 0xF;
+
+        declow = aclow + oplow + carryin;
+        dechigh = achigh + ophigh;
+        if (declow > 9) {
+            dechigh++;
+            declow -= 10;
+        }
+        if (dechigh > 9) {
+            cpu->sr |= SR_C;
+            dechigh -= 10;
+        }
+        else
+            cpu->sr &= ~SR_C;
+        
+        cpu->ac = dechigh * 0x10 + declow;
+    }
+
+    set_n_if_negative(cpu, cpu->ac);
+    set_z_if_zero(cpu, cpu->ac);
+    set_v_on_overflow(cpu, acold, *operand);
+}
+
 void nop(struct cpu *, uint8_t *, uint8_t *) { }
 
 // The functions below do not represent the 6502's instructions
@@ -445,6 +494,25 @@ void set_n_if_negative(struct cpu *cpu, uint8_t value) {
         cpu->sr |= SR_N;
     else
         cpu->sr &= ~SR_N;
+}
+
+void set_v_on_overflow(struct cpu *cpu, uint8_t a, uint8_t b) {
+    if ((a & SIGN_BIT) == (b & SIGN_BIT)) {
+        if (a & SIGN_BIT) {
+            if ((a + b) & SIGN_BIT)
+                cpu->sr &= ~SR_V;
+            else
+                cpu->sr |= SR_V;
+        }
+        else {
+            if (!((a + b) & SIGN_BIT))
+                cpu->sr &= ~SR_V;
+            else
+                cpu->sr |= SR_V;
+        }
+    }
+    else
+        cpu->sr &= ~SR_V;
 }
 
 void push(struct cpu *cpu, uint8_t value, uint8_t *ram) {
