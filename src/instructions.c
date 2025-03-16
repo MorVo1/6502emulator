@@ -133,6 +133,12 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xD9] = {cmp, OPERAND_ABSOLUTE_Y},
     [0xC1] = {cmp, OPERAND_PRE_ZEROPAGE_X},
     [0xD1] = {cmp, OPERAND_POST_ZEROPAGE_Y},
+    [0xE0] = {cpx, OPERAND_IMMEDIATE},
+    [0xEC] = {cpx, OPERAND_ABSOLUTE},
+    [0xE4] = {cpx, OPERAND_ZEROPAGE},
+    [0xC0] = {cpy, OPERAND_IMMEDIATE},
+    [0xCC] = {cpy, OPERAND_ZEROPAGE},
+    [0xC4] = {cpy, OPERAND_ZEROPAGE},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -490,6 +496,30 @@ void cmp(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     uint8_t result = cpu->ac - *operand;
 
     if (result <= cpu->ac)
+        cpu->sr |= SR_C;
+    else
+        cpu->sr &= ~SR_C;
+    
+    set_n_if_negative(cpu, result);
+    set_z_if_zero(cpu, result);
+}
+
+void cpx(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    uint8_t result = cpu->x - *operand;
+
+    if (result <= cpu->x)
+        cpu->sr |= SR_C;
+    else
+        cpu->sr &= ~SR_C;
+    
+    set_n_if_negative(cpu, result);
+    set_z_if_zero(cpu, result);
+}
+
+void cpy(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    uint8_t result = cpu->y - *operand;
+
+    if (result <= cpu->y)
         cpu->sr |= SR_C;
     else
         cpu->sr &= ~SR_C;
