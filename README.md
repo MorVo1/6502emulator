@@ -28,7 +28,7 @@ Though please keep in mind that not all of the instructions are implemented and 
 - [X] Implement the stack instructions.
 - [X] Implement the shift instructions.
 - [X] Implement the logic instructions.
-- [ ] Implement the arith instructions.
+- [X] Implement the arith instructions.
 - [X] Implement the inc instructions.
 - [X] Implement the ctrl instructions.
 - [X] Implement the bra instructions.
