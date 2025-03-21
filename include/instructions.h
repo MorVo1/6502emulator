@@ -83,6 +83,7 @@ void adc(struct cpu *, uint8_t *, uint8_t *);
 void cmp(struct cpu *, uint8_t *, uint8_t *);
 void cpx(struct cpu *, uint8_t *, uint8_t *);
 void cpy(struct cpu *, uint8_t *, uint8_t *);
+void sbc(struct cpu *, uint8_t *, uint8_t *);
 void nop(struct cpu *, uint8_t *, uint8_t *);
 
 // The functions below do not represent the 6502's instructions

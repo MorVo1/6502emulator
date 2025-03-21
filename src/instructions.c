@@ -139,6 +139,14 @@ struct instruction instructions[INSTRUCTION_COUNT] = {
     [0xC0] = {cpy, OPERAND_IMMEDIATE},
     [0xCC] = {cpy, OPERAND_ZEROPAGE},
     [0xC4] = {cpy, OPERAND_ZEROPAGE},
+    [0xE9] = {sbc, OPERAND_IMMEDIATE},
+    [0xE5] = {sbc, OPERAND_ZEROPAGE},
+    [0xF5] = {sbc, OPERAND_ZEROPAGE_X},
+    [0xED] = {sbc, OPERAND_ABSOLUTE},
+    [0xFD] = {sbc, OPERAND_ABSOLUTE_X},
+    [0xF9] = {sbc, OPERAND_ABSOLUTE_Y},
+    [0xE1] = {sbc, OPERAND_PRE_ZEROPAGE_X},
+    [0xF1] = {sbc, OPERAND_POST_ZEROPAGE_Y},
     [0xEA] = {nop, OPERAND_IMPLIED}
 };
 
@@ -528,6 +536,41 @@ void cpy(struct cpu *cpu, uint8_t *operand, uint8_t *) {
     set_z_if_zero(cpu, result);
 }
 
+void sbc(struct cpu *cpu, uint8_t *operand, uint8_t *) {
+    uint8_t not_operand = ~*operand;
+    if (!(cpu->sr & SR_D))
+        adc(cpu, &not_operand, nullptr);
+    else {
+        uint8_t acold = cpu->ac;
+        uint8_t carryin = cpu->sr & SR_C;
+        int8_t achigh, aclow, ophigh, oplow, dechigh, declow;
+
+        achigh = cpu->ac >> 4;
+        aclow = cpu->ac & 0xF;
+
+        ophigh = *operand >> 4;
+        oplow = *operand & 0xF;
+
+        declow = aclow + ~oplow + carryin;
+        dechigh = achigh + ~ophigh;
+        if (declow < 0) {
+            // I'm not decrementing dechigh because of the natural behaviour of two's complement.
+            declow += 10;
+        }
+        if (dechigh < 0) {
+            cpu->sr &= ~SR_C;
+            dechigh += 10;
+        }
+        else
+            cpu->sr &= ~SR_C;
+        
+        cpu->ac = dechigh * 0x10 + declow;
+        set_n_if_negative(cpu, cpu->ac);
+        set_z_if_zero(cpu, cpu->ac);
+        set_v_on_overflow(cpu, acold, not_operand);
+    }
+}
+
 void nop(struct cpu *, uint8_t *, uint8_t *) { }
 
 // The functions below do not represent the 6502's instructions
@@ -549,13 +592,13 @@ void set_n_if_negative(struct cpu *cpu, uint8_t value) {
 void set_v_on_overflow(struct cpu *cpu, uint8_t a, uint8_t b) {
     if ((a & SIGN_BIT) == (b & SIGN_BIT)) {
         if (a & SIGN_BIT) {
-            if ((a + b) & SIGN_BIT)
+            if ((a + b + (cpu->sr & SR_C ? 1 : 0)) & SIGN_BIT)
                 cpu->sr &= ~SR_V;
             else
                 cpu->sr |= SR_V;
         }
         else {
-            if (!((a + b) & SIGN_BIT))
+            if (!((a + b + (cpu->sr & SR_C ? 1 : 0)) & SIGN_BIT))
                 cpu->sr &= ~SR_V;
             else
                 cpu->sr |= SR_V;
